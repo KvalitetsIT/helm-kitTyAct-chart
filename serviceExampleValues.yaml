@@ -1,0 +1,299 @@
+fullnameOverride: vdx-pexip-status
+namespace: vdx
+
+replicaCount: 1
+revisionHistoryLimit: 5
+
+deploymentStrategy: Recreate
+
+image:
+  repository: kvalitetsit/medcom-pexip-status-core
+  tag: "1.1.0"
+
+serviceAccount:
+  create: false
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: optional_no_ca
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: true
+    nginx.ingress.kubernetes.io/auth-url: http://testserviceaa:8787/
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_set_header forwarded-from-nginx $ssl_client_escaped_cert;
+  hosts:
+    - host: pexip-sink.vdxapi.dk
+      paths:
+        - path: /history
+
+    - host: pexip-sink.vdxapi.dk
+      paths:
+        - path: /test
+          servicePort: 123
+        - path: /test2
+
+  tls:
+    - hosts:
+        - vdxapi.dk
+      secretName: star.vdxapi.dk
+
+extraIngress:
+  internalOnly:
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      ingress.kubernetes.io/whitelist-source-range: "1.1.1.1/24"
+    hosts:
+      - host: booking.vconf-stage.dk
+        paths:
+          - path: /
+            servicePort: 7070
+          - path: /getsessiondata
+            servicePort: 8080
+
+    tls:
+      - hosts:
+          - booking.vconf-stage.dk
+        secretName: booking.vconf-stage.dk
+
+  internalOnlyNoTls:
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      ingress.kubernetes.io/whitelist-source-range: "1.1.1.1/24"
+    hosts:
+      - host: booking.vconf-stage.dk
+        paths:
+          - path: /
+            servicePort: 7070
+          - path: /getsessiondata
+            servicePort: 8080
+service:
+  port: 8080
+  targetPort: proxy-port
+
+  extraPorts:
+    test:
+      port: 80
+      targetPort: 80
+
+  annotations:
+    prometheus.io/path: /manage/actuator/appmetrics
+    prometheus.io/port: "8081"
+    prometheus.io/scrape: "true"
+
+sidecar:
+  name: nginx-prometheus-exporter
+  image:
+    repository: nginx/nginx-prometheus-exporter
+    tag: "0.8.0"
+  containerPort: 9113
+  commands:
+    - /user/bin/exporter
+    - -nginx.scrape-uri
+    - "localhost:8080/stats"
+  extraVolumeMounts:
+    myEmptyDir:
+      mountPath: /dir
+    myEmptyDir_1:
+      mountPath: /dir1
+    myEmptyDir_2:
+      mountPath: /dir2
+      
+deployment:
+  extraVolumes:
+    myEmptyDir: |
+      emtpyDir: {}
+    myEmptyDirSubPath: |
+      emtpyDir: {}
+    myReadOnlyDir: |
+      emtpyDir: {}
+  extraVolumeMounts:
+    myEmptyDir:
+      mountPath: /dir
+    myEmptyDir_1:
+      mountPath: /dir1
+    myEmptyDir_2:
+      mountPath: /dir2
+    myEmptyDirSubPath:
+      mountPath: /dir
+      subPath: subPath
+    myReadOnlyDir:
+      mountPath: /ro-dir
+      readOnly: true
+
+  configMapMountPaths:
+    nginx-conf:
+      configMapMountPath: /config/nginx.conf
+      configMapMountSubPath: nginx.conf
+    test2:
+      configMapMountPath: /config/test2.conf
+      configMapMountSubPath: test2.conf
+  resources:
+    CPU: 123
+  extraContainerPort:
+    test1: 23
+    test2: 243
+
+
+  args:
+    - -test1
+    - -test2
+  env:
+    PEXIPAPIUSERNAME:
+      type: secretKeyRef
+      name: pexip-api
+      key: username
+    PEXIPAPIPASSWORD:
+      type: secretKeyRef
+      name: pexip-api
+      key: password
+    SQLUSER:
+      type: secretKeyRef
+      name: statisticsdb
+      key: username
+    SQLPASS:
+      type: secretKeyRef
+      name: statisticsdb
+      key: password
+    START_CONFSYSCOLL:
+      value: "false"
+    START_LICSTATCOLL:
+      value: "false"
+
+  hostAliases:
+    127.0.0.1:
+      - foo.local
+      - bar.local
+    10.1.2.3:
+      - foo.remote
+      - bar.remote
+
+initContainers:
+  test:
+    image:
+      repository: kvalitetsit/init
+      tag: "1.1.0"
+    env:
+      SQLPASS:
+        type: secretKeyRef
+        name: statisticsdb
+        key: password
+      START_CONFSYSCOLL:
+        value: "false"
+    args:
+      - -test1
+      - -test2
+    commands:
+      - wget
+      - "-0"
+      - "/work-dir/index.html"
+      - http://kubernetes.io
+    configMapMountPaths:
+      nginx-conf:
+        configMapMountPath: /config/nginx.conf
+        configMapMountSubPath: nginx.conf
+    extraVolumeMounts:
+      myEmptyDir:
+        mountPath: /dir
+      myEmptyDirSubPath_1:
+        mountPath: /dir
+        subPath: subPath1
+      myEmptyDirSubPath_2:
+        mountPath: /dir/otherPath
+        subPath: subPath2
+
+extraConfigMapJson:
+  organization.json:
+    [
+      {
+        "organizationId": 10,
+        "organization":  "region-h",
+        "secretKeyLocation": "/key/key.txt"
+      },
+      {
+        "organizationId": 20,
+        "organization":  "region-sj",
+        "secretKeyLocation": "/key/key.txt"
+      },
+      {
+        "organizationId": "medcom",
+        "organization":  "medcom",
+        "secretKeyLocation": "/key/key.txt"
+      }
+    ]
+
+extraConfigMap:
+  nginx.conf: |
+    events {}
+    http {
+
+    # Upstream servers
+    upstream pexip_vdx {
+
+        ip_hash;
+
+        server 185.29.78.131:443 weight=1 max_fails=0;
+
+        server 185.29.78.132:443 weight=1 max_fails=0;
+
+        server 185.29.78.133:443 weight=1 max_fails=0;
+
+        server 185.29.78.134:443 weight=1 max_fails=0;
+
+        server 185.29.78.135:443 weight=1 max_fails=0;
+
+        server 185.29.78.136:443 weight=1 max_fails=0;
+
+        keepalive 1024;
+    }
+
+docService:
+  enabled: false
+
+certificate:
+  urlhandler.vconf-stage.dk:
+    namespace: vdx
+    spec:
+      secretName: urlhandler.vconf-stage.dk
+      issuerRef:
+        name: letsencrypt-prod
+        kind: ClusterIssuer
+        group: cert-manager.io
+      dnsNames:
+        - urlhandler.vconf-stage.dk
+  vdx-urlhandler:
+    namespace: vdx
+    spec:
+      secretName: urlhandler-client-cert
+      duration: 87600h
+      renewBefore: 24h
+      commonName: vdx-urlhandler
+      issuerRef:
+        name: ca-issuer
+        kind: ClusterIssuer
+        group: cert-manager.io
+
+sealedSecret:
+  Mariadb:
+    encryptedData:
+      username: username-encrypted
+      pasword: password-encrypted
+  OtherSecret:
+    type: Opaque
+    encryptedData:
+      key: AgBOQOoh7RGqTBPPSG0CtbfZD/Wh+Csl/c5HSqTzy2SoRBxh9nE4Ud4QqEAO1+S1e5VvZw2+ycpxB/272M1uxweHzzPwozFFJ6YI1zu6oG4WETU9CFCk0MBR8TOj7ng1ccR4MNJB1vJmtfkuCXrd6UDs4gYYGo+xaCHNfsVTkpVhpLrQiv/FVpfeutCOYXtTOGJ6M2a6eF7HpUijARmyIiM+nGGzjaiT4BvDE522eV1qId205WH/tti5Kgl+4iH4djZo0TG92+r3k1HcFEk3vQojTA62LFy6djmPJqreSOSEIDngSsbxhasmory0J2ehDdshCGCyaHEu3QtJ7P07WVjgwGX+G9IYrGW3tqQUohWO9+uZUOPB0Mq+K0850QeA5OfkfggOX+L6GiLR10E5JZ94Ke7QU5D0uT3IDYMkwIREUP6f3ZwLJOz4YgX4cl5tTsUOVIAFXcZsMyKXoroXmqxeoCMaam8taO+F8geEyOxqMEm3XDVxKXATfOdFIgk59to7rRNCI29pNaPdiDhX9t71ur1CRvcLqU5FYq6EZkL0Ivinj6XUsfQGXznV/8k+LfzhOmoSPtxBO4xPgcBAKHeUTokuXjnayPNSg96Goxr/v9i5FmdxcqITIsnD30XSXDFylBZ3CV
+    data:
+      key1: "-"
+      key2: 123
+      key3: hello
+      key4: true
+      config.json: |-
+        {
+          "foo": "bar",
+          "encrypted": "{{ index . "key" }}",
+        }
+      plaintext: somevalue
+
+serviceMonitor:
+  enabled: true
+  interval: 5s
