@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{.Values.name}}
+    app.kubernetes.io/instance: {{.Values.name}}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: {{.Values.name}}
+    argocd.argoproj.io/instance: {{.Values.name}}
+  name: {{.Values.name}}
+  namespace: {{.Values.namespace}}
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: container-port
+  selector:
+    app.kubernetes.io/instance: {{.Values.name}}
+    app.kubernetes.io/name: {{.Values.name}}
+  type: ClusterIP

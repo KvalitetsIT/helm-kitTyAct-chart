@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{.Values.name}}
+    app.kubernetes.io/instance: {{.Values.name}}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: {{.Values.name}}
+    app.kubernetes.io/version: 1.30.2
+  name: {{.Values.name}}
+  namespace: {{.Values.namespace}}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{.Values.name}}
+      app.kubernetes.io/name: {{.Values.name}}
+  template:
+    metadata:
+      annotations:
+        checksum/config: 75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070
+      labels:
+        app.kubernetes.io/instance: {{.Values.name}}
+        app.kubernetes.io/name: {{.Values.name}}
+    spec:
+      affinity:
+        nodeAffinity: null
+        podAffinity: null
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: {{.Values.name}}
+                    app.kubernetes.io/name: {{.Values.name}}
+                namespaces:
+                  - {{.Values.namespace}}
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      automountServiceAccountToken: false
+      containers:
+        - args: []
+          command: []
+          env: []
+          image: {{ .Values.nginxImageOverride | default "nginxinc/nginx-unprivileged:alpine3.17" }}
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: {{.Values.name}}
+          ports:
+            - containerPort: 80
+              name: container-port
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 25m
+              memory: 50Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - mountPath: /etc/nginx
+              name: etc
+            - mountPath: /docker-entrypoint.d
+              name: init
+            - mountPath: /var/cache/nginx
+              name: nginx-cache
+            - mountPath: /var/run
+              name: var
+      {{- if .Values.imagePullSecret}}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecret }}
+      {{- end }}
+      initContainers:
+        - env:          
+          {{- range $name, $value := .Values.env }}
+          - name: {{ $value.name }}
+            value: {{ $value.value }}
+          {{- end }}
+          image: {{ .Values.image | default "kvalitetsit/kittyact" }} 
+          name: init
+          volumeMounts:
+            - mountPath: /temp/etc/nginx
+              name: etc
+            - mountPath: /temp/docker-entrypoint.d
+              name: init
+            - mountPath: /temp/var/cache/nginx
+              name: nginx-cache
+            - mountPath: /temp/var/run
+              name: var
+      securityContext: {}
+      serviceAccountName: default
+      volumes:
+        - emptyDir: {}
+          name: etc
+        - emptyDir: {}
+          name: init
+        - emptyDir: {}
+          name: nginx-cache
+        - emptyDir: {}
+          name: var
