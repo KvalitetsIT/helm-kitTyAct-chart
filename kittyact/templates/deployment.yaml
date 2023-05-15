@@ -96,8 +96,8 @@ spec:
       {{- end }}
       initContainers:
         - image: {{ .Values.image | default "kvalitetsit/kittyact" }} 
-          env: {{ if (not .Values.deployment.env) }}[]{{ end }}
-          {{- range $key, $value := .Values.deployment.env }}
+          env: {{ if (not .Values.env) }}[]{{ end }}
+          {{- range $key, $value := .Values.env }}
           - name: {{ $key }}
             {{- if (not $value.type) }}
             value: {{ $value.value | quote }}
