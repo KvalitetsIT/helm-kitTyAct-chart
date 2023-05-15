@@ -95,12 +95,28 @@ spec:
         - name: {{ .Values.imagePullSecret }}
       {{- end }}
       initContainers:
-        - env:          
-          {{- range $name, $value := .Values.env }}
-          - name: {{ $value.name }}
-            value: {{ $value.value }}
+        - image: {{ .Values.image | default "kvalitetsit/kittyact" }} 
+          env: {{ if (not .Values.deployment.env) }}[]{{ end }}
+          {{- range $key, $value := .Values.deployment.env }}
+          - name: {{ $key }}
+            {{- if (not $value.type) }}
+            value: {{ $value.value | quote }}
+            {{- else if eq $value.type "fieldPath" }}
+            valueFrom:
+              fieldRef:
+                fieldPath: {{ $value.value }}
+            {{- else if eq $value.type "secretKeyRef" }}
+            valueFrom:
+              secretKeyRef:
+                key: {{ $value.key }}
+                name: {{ $value.name }}
+            {{- else if eq $value.type "configMapKeyRef" }}
+            valueFrom:
+              configMapKeyRef:
+                key: {{ $value.key }}
+                name: {{ $value.name }}
+            {{- end }}
           {{- end }}
-          image: {{ .Values.image | default "kvalitetsit/kittyact" }} 
           name: init
           volumeMounts:
             - mountPath: /temp/etc/nginx
