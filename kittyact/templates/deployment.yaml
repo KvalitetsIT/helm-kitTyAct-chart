@@ -129,8 +129,6 @@ spec:
               name: nginx-cache
             - mountPath: /temp/var/run
               name: var
-            - mountPath: /tmp
-              name: tmp
       securityContext: {}
       serviceAccountName: default
       volumes:
