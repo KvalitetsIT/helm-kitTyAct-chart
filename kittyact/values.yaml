@@ -3,7 +3,9 @@ name : medcom-sdn-demo-ui
 nginxImageOverride : nginxinc/nginx-unprivileged:alpine3.17
 image : kvalitetsit/medcom-sdn-ui:e1aab1b0abd33f1d8f1d5529e64c2ed37a2cb54c
 imagePullSecret: kithosting-medcom-sdn-demo
+imagePullPolicy: IfNotPresent
 frontendUrl : portal-ui.medcom-sdn-demo.t0.hosting.kitkube.dk
+replicas: 2
 env:
 - name: REACT_APP_API_BASEURL
   value: 'https://api.sdn-demo.t0.hosting.kitkube.dk/v1'

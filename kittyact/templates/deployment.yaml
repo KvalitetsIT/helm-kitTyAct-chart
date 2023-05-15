@@ -6,11 +6,10 @@ metadata:
     app.kubernetes.io/instance: {{.Values.name}}
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: {{.Values.name}}
-    app.kubernetes.io/version: 1.30.2
   name: {{.Values.name}}
   namespace: {{.Values.namespace}}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 2 }}
   revisionHistoryLimit: 3
   selector:
     matchLabels:
@@ -18,8 +17,6 @@ spec:
       app.kubernetes.io/name: {{.Values.name}}
   template:
     metadata:
-      annotations:
-        checksum/config: 75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070
       labels:
         app.kubernetes.io/instance: {{.Values.name}}
         app.kubernetes.io/name: {{.Values.name}}
@@ -44,7 +41,7 @@ spec:
           command: []
           env: []
           image: {{ .Values.nginxImageOverride | default "nginxinc/nginx-unprivileged:alpine3.17" }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /
@@ -66,9 +63,6 @@ spec:
             successThreshold: 1
             timeoutSeconds: 1
           resources:
-            limits:
-              cpu: 500m
-              memory: 512Mi
             requests:
               cpu: 25m
               memory: 50Mi
