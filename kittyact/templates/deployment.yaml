@@ -90,6 +90,8 @@ spec:
               name: nginx-cache
             - mountPath: /var/run
               name: var
+            - mountPath: /tmp
+              name: tmp
       {{- if .Values.imagePullSecret}}
       imagePullSecrets:
         - name: {{ .Values.imagePullSecret }}
@@ -127,6 +129,8 @@ spec:
               name: nginx-cache
             - mountPath: /temp/var/run
               name: var
+            - mountPath: /tmp
+              name: tmp
       securityContext: {}
       serviceAccountName: default
       volumes:
@@ -138,3 +142,5 @@ spec:
           name: nginx-cache
         - emptyDir: {}
           name: var
+        - emptyDir: {}
+          name: tmp
