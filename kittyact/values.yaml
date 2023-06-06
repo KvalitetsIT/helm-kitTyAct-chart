@@ -1,29 +1,23 @@
-namespace : medcom-sdn-demo
-name : medcom-sdn-demo-ui
+namespace : default
+name : kittyacy-ui
 nginxImageOverride : nginxinc/nginx-unprivileged:alpine3.17
-image : kvalitetsit/medcom-sdn-ui:e1aab1b0abd33f1d8f1d5529e64c2ed37a2cb54c
-imagePullSecret: kithosting-medcom-sdn-demo
+imagePullSecret: imagepullSecret
 imagePullPolicy: IfNotPresent
-frontendUrl : portal-ui.medcom-sdn-demo.t0.hosting.kitkube.dk
 replicas: 2
 env:
-- name: REACT_APP_API_BASEURL
-  value: 'https://api.sdn-demo.t0.hosting.kitkube.dk/v1'
-- name: REACT_APP_API_MOCKBASEURL
-  value: 'https://api.sdn-demo.t0.hosting.kitkube.dk/v1'
-- name: REACT_APP_DISABLE_BUTTONS_NOT_WORKING
-  value: 'false'
-- name: REACT_APP_DSDN_DOMAIN
-  value: dsdn.dk
-- name: REACT_APP_INACTIVITY_MAX_MINUTES
-  value: '30'
-- name: REACT_APP_KEYCLOAK_CLIENTID
-  value: aftaleportal-ui
-- name: REACT_APP_KEYCLOAK_REALM
-  value: aftaleportal-demo
-- name: REACT_APP_KEYCLOAK_URL
-  value: 'https://keycloak.sdn.t0.hosting.kitkube.dk/auth'
-- name: REACT_APP_NODE_ENV
-  value: production
-- name: REACT_APP_SUPPORT_IPV6
-  value: 'false'
+  REACT_APP_API_BASEURL:
+    value: 'https://api.kitkube.dk/v1'
+  REACT_APP_API_MOCKBASEURL:
+    value: 'https://api-mock.kitkube.dk/v1'
+  REACT_APP_DISABLE_BUTTONS_NOT_WORKING:
+    value: 'false'
+  REACT_APP_INACTIVITY_MAX_MINUTES:
+    value: '30'
+  REACT_APP_KEYCLOAK_CLIENTID:
+    value: aftaleportal-ui
+  REACT_APP_KEYCLOAK_REALM:
+    value: aftaleportal-demo
+  REACT_APP_KEYCLOAK_URL:
+    value: 'https://keycloak.sdn.t0.hosting.kitkube.dk/auth'
+  REACT_APP_NODE_ENV:
+    value: production

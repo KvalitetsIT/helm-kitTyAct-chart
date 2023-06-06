@@ -1,3 +1,5 @@
+{{- $rootValues := .Values }}
+{{- range $key, $value := $rootValues.frontendUrls }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,35 +9,38 @@ metadata:
     nginx.ingress.kubernetes.io/configuration-snippet: |
       more_set_headers "X-Request-Id: $req_id";
   labels:
-    app: {{.Values.name}}
-    app.kubernetes.io/instance: {{.Values.name}}
+    app: {{$rootValues.name}}
+    app.kubernetes.io/instance: {{$rootValues.name}}
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: {{.Values.name}}
+    app.kubernetes.io/name: {{$rootValues.name}}
     app.kubernetes.io/version: 1.30.2
-    argocd.argoproj.io/instance: {{.Values.name}}
+    argocd.argoproj.io/instance: {{$rootValues.name}}
     helm.sh/chart: service-1.30.2
-  name: {{.Values.name}}
-  namespace: {{.Values.namespace}}
+  name: {{$rootValues.name}}
+  namespace: {{$rootValues.namespace}}
 spec:
   rules:
-    - host: {{.Values.frontendUrl}}
+    - host: {{$value.url}}
       http:
         paths:
           - backend:
               service:
-                name: {{.Values.name}}
+                name: {{$rootValues.name}}
                 port:
                   number: 8080
             path: /
             pathType: Prefix
           - backend:
               service:
-                name: {{.Values.name}}
+                name: {{$rootValues.name}}
                 port:
                   number: 3030
             path: /api
             pathType: Prefix
   tls:
     - hosts:
-        - {{.Values.frontendUrl}}
-      secretName: {{.Values.frontendUrl}}
+        - {{$value.url}}
+      secretName: {{$value.url}}
+---
+  {{- end }}
+  
