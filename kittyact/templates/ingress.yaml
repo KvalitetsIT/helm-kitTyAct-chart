@@ -13,9 +13,8 @@ metadata:
     app.kubernetes.io/instance: {{$rootValues.name}}
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: {{$rootValues.name}}
-    app.kubernetes.io/version: 1.30.2
     argocd.argoproj.io/instance: {{$rootValues.name}}
-    helm.sh/chart: service-1.30.2
+    helm.sh/chart: kittyact
   name: {{$rootValues.name}}
   namespace: {{$rootValues.namespace}}
 spec:
