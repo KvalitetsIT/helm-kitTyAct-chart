@@ -1,7 +1,9 @@
 namespace : medcom-sdn-demo
 name : medcom-sdn-demo-ui
 nginxImageOverride : nginxinc/nginx-unprivileged:alpine3.17
-image : kvalitetsit/medcom-sdn-ui:e1aab1b0abd33f1d8f1d5529e64c2ed37a2cb54c
+image : 
+  repository: kvalitetsit/medcom-sdn-ui
+  tag: e1aab1b0abd33f1d8f1d5529e64c2ed37a2cb54c
 imagePullSecret: kithosting-medcom-sdn-demo
 imagePullPolicy: IfNotPresent
 frontendUrls: 
