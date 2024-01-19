@@ -21,10 +21,3 @@ env:
     value: 'https://keycloak.sdn.t0.hosting.kitkube.dk/auth'
   REACT_APP_NODE_ENV:
     value: production
-
-ingress:
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      more_set_headers "X-Request-Id: $req_id";
