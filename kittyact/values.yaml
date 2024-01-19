@@ -4,6 +4,7 @@ nginxImageOverride : nginxinc/nginx-unprivileged:alpine3.17
 imagePullSecret: imagepullSecret
 imagePullPolicy: IfNotPresent
 replicas: 2
+letsencrypt: true
 env:
   REACT_APP_API_BASEURL:
     value: 'https://api.kitkube.dk/v1'
