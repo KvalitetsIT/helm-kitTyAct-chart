@@ -17,6 +17,9 @@ metadata:
   name: {{$rootValues.name}}
   namespace: {{$rootValues.namespace}}
 spec:
+  {{- if $rootValues.ingressClassName }}
+  ingressClassName: {{$rootValues.ingressClassName}}
+  {{- end }}
   rules:
   {{- range $key, $value := $rootValues.frontendUrls }}
     - host: {{$value.url}}
