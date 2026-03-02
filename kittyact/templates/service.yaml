@@ -15,6 +15,10 @@ spec:
       port: 8080
       protocol: TCP
       targetPort: container-port
+    - name: api
+      port: 3030
+      protocol: TCP
+      targetPort: 3030
   selector:
     app.kubernetes.io/instance: {{.Values.name}}
     app.kubernetes.io/name: {{.Values.name}}
