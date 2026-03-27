@@ -64,8 +64,7 @@ spec:
             timeoutSeconds: 1
           resources:
             requests:
-              cpu: 25m
-              memory: 50Mi
+{{ toYaml .Values.resources.requests | nindent 14 }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

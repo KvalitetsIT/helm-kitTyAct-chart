@@ -8,6 +8,10 @@ nginxAnnotations:
 imagePullSecret: imagepullSecret
 imagePullPolicy: IfNotPresent
 replicas: 2
+resources:
+  requests:
+    cpu: 5m
+    memory: 50Mi
 env:
   REACT_APP_API_BASEURL:
     value: 'https://api.kitkube.dk/v1'

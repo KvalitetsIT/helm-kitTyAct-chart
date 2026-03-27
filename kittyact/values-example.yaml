@@ -10,6 +10,10 @@ frontendUrls:
 - url: portal-ui.medcom-sdn-demo.t0.hosting.kitkube.dk
 - url: portal-ui.medcom-sdn-demo.t0.hosting.kitkube.com
 replicas: 2
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi
 env:
   REACT_APP_API_BASEURL:
     value: 'https://api.sdn-demo.t0.hosting.kitkube.dk/v1'
